@@ -59,6 +59,7 @@ npm run dev                  # http://localhost:3000
 | Variável | Onde | Padrão | Uso |
 |---|---|---|---|
 | `NEXT_PUBLIC_PARTNER_URL` | build | `https://integradores-opengate.framer.website` | Destino do CTA. |
+| `NEXT_PUBLIC_INSTITUTIONAL_URL` | build | `https://site-opengate.vercel.app` | Site institucional (logo e rodapé). |
 | `ANTHROPIC_API_KEY` | servidor | vazio | Ativa a redação da leitura por IA. Sem ela, usa regras. |
 | `AI_MODEL` | servidor | `claude-opus-5-5` | Modelo da Anthropic. |
 | `AI_ENABLED` | servidor | `true` | `false` desliga a IA sem remover a chave. |

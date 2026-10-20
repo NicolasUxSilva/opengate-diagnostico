@@ -4,7 +4,7 @@ import { Nunito_Sans, Open_Sans } from "next/font/google";
 import { site } from "@/config/site";
 import "./globals.css";
 
-// Famílias usadas em opengatebr.com: Nunito Sans nos títulos, Open Sans no texto.
+// Famílias usadas no site institucional da OpenGate: Nunito Sans nos títulos, Open Sans no texto.
 const display = Nunito_Sans({ subsets: ["latin"], weight: ["400", "700", "800"], variable: "--font-nunito-sans", display: "swap" });
 const body = Open_Sans({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-open-sans", display: "swap" });
 

@@ -8,7 +8,8 @@ export const site = {
   /** Landing page comercial da parceria (destino do CTA). */
   partnerUrl: process.env.NEXT_PUBLIC_PARTNER_URL || "https://integradores-opengate.framer.website",
   partnerCtaLabel: "Conhecer a parceria OpenGate",
-  institutionalUrl: "https://opengatebr.com",
+  /** Site institucional da OpenGate (links do logo e do rodapé). */
+  institutionalUrl: process.env.NEXT_PUBLIC_INSTITUTIONAL_URL || "https://site-opengate.vercel.app",
   /** Meta Pixel: só carrega se o ID estiver configurado. */
   metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID || "",
 };

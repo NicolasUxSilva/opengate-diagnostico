@@ -13,7 +13,7 @@ Testes: `tests/unit/qualify.spec.ts` (inclui varredura de 5.120 combinações de
 |---|---|
 | Estratégia OpenGate (PDF, 4 p.) | Público: integrador profissional, com clientes, postura comercial ("Eu tenho clientes e posso apresentar isso para eles"). Fora do foco: quem não atua profissionalmente, não tem carteira ou busca renda extra. Funil: cada etapa filtra; o formulário confirma se trabalha com segurança eletrônica, se tem empresa, carteira e cliente com oportunidade. |
 | Landing page da parceria | Modelo: "Você indica ou instala"; OpenGate cuida da plataforma, integrações e suporte. Perfil buscado: já instala fechaduras, câmeras, alarmes ou controle de acesso; carteira em hospedagem, condomínios ou empresas. Não é para quem busca ganho rápido ou não quer acompanhar os clientes. |
-| opengatebr.com | Soluções (hospedagem, condomínios, coworking, estacionamentos, ambientes autônomos, corporativo), integrações com PMS (Stays, Hospedin) e TTLock, acesso por link/código, operação 24h, rastreabilidade. |
+| Site institucional (site-opengate.vercel.app; auditado quando estava em opengatebr.com) | Soluções (hospedagem, condomínios, coworking, estacionamentos, ambientes autônomos, corporativo), integrações com PMS (Stays, Hospedin) e TTLock, acesso por link/código, operação 24h, rastreabilidade. |
 
 ## Dimensões e pesos
 

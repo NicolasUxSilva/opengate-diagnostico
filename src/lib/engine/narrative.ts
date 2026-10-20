@@ -4,7 +4,7 @@
  *
  * Regras editoriais:
  * - Só afirmar sobre o visitante o que ele respondeu.
- * - Só afirmar sobre a OpenGate o que está em opengatebr.com ou na landing page da parceria
+ * - Só afirmar sobre a OpenGate o que está no site institucional ou na landing page da parceria
  *   (ver `facts` abaixo). Nada de valores, ganhos, prazos ou aprovação garantida.
  */
 import { optionLabel, type CompleteAnswers } from "@/config/questions";

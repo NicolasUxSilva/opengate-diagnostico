@@ -63,6 +63,11 @@ test("entrada carrega com título, CTA e sem erros de console", async ({ page })
   await expect(page.getByRole("heading", { level: 1 })).toContainText("próxima oportunidade");
   await expect(page.getByText("6 perguntas · cerca de 2 minutos · sem cadastro")).toBeVisible();
   await expect(page.getByRole("button", { name: "Começar diagnóstico" })).toBeVisible();
+  // Destaque do título no verde dos botões e links para o site institucional atual
+  await expect(page.locator(".intro__title .accent")).toHaveCSS("color", "rgb(146, 177, 16)");
+  await expect(page.locator(".header__logo")).toHaveAttribute("href", "https://site-opengate.vercel.app");
+  await expect(page.locator(".footer a")).toHaveAttribute("href", "https://site-opengate.vercel.app");
+  await expect(page.locator(".footer a")).toHaveText("site-opengate.vercel.app");
   await expectNoHorizontalScroll(page);
   expect(errors).toEqual([]);
 });

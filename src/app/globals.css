@@ -1,5 +1,5 @@
 /*
- * Sistema visual do Diagnóstico — derivado de opengatebr.com e da landing page da parceria.
+ * Sistema visual do Diagnóstico — derivado do site institucional da OpenGate e da landing page da parceria.
  * Cores conferidas no site original (auditoria de 14/10/2026); verde e textos ajustados
  * para contraste AA, como na reconstrução do site (texto navy sobre o verde).
  */
@@ -10,7 +10,6 @@
   --green-300: #a8c33a; /* hover do primário */
   --green-text: #5d7109; /* verde para texto sobre fundo claro (AA) */
   --cyan-400: #37b9d9; /* destaque sobre fundo escuro */
-  --cyan-600: #1a87a8; /* o ciano do site (#37B9D9) tem 2,3:1 no branco; escurecido para 3,9:1 em títulos */
   --teal-600: #007690; /* texto de tag */
   --tag-bg: #e3f5fa;
   --select-bg: #eef7fb;
@@ -181,7 +180,7 @@ a {
 }
 
 .accent {
-  color: var(--cyan-600);
+  color: var(--green-500); /* mesmo verde dos botões, a pedido da OpenGate */
 }
 
 /* ── Botões ────────────────────────────────────────────── */

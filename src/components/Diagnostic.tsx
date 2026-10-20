@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { questions, type Answers, type CompleteAnswers } from "@/config/questions";
+import { site } from "@/config/site";
 import { track } from "@/lib/analytics";
 import { buildResult, type DiagnosticResult } from "@/lib/engine/narrative";
 import { qualify } from "@/lib/engine/qualify";
@@ -179,8 +180,8 @@ export function Diagnostic() {
       <footer className="footer">
         <p>
           © {new Date().getFullYear()} OpenGate ·{" "}
-          <a href="https://opengatebr.com" target="_blank" rel="noopener noreferrer">
-            opengatebr.com
+          <a href={site.institutionalUrl} target="_blank" rel="noopener noreferrer">
+            {new URL(site.institutionalUrl).hostname}
           </a>
         </p>
       </footer>
