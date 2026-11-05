@@ -58,13 +58,13 @@ npm run dev                  # http://localhost:3000
 
 | Variável | Onde | Padrão | Uso |
 |---|---|---|---|
-| `NEXT_PUBLIC_PARTNER_URL` | build | `https://integradores-opengate.framer.website` | Destino do CTA. |
+| `NEXT_PUBLIC_PARTNER_URL` | build | `https://opengate-integradores.vercel.app` | Destino do CTA. |
 | `NEXT_PUBLIC_INSTITUTIONAL_URL` | build | `https://site-opengate.vercel.app` | Site institucional (logo e rodapé). |
 | `ANTHROPIC_API_KEY` | servidor | vazio | Ativa a redação da leitura por IA. Sem ela, usa regras. |
 | `AI_MODEL` | servidor | `claude-opus-5-5` | Modelo da Anthropic. |
 | `AI_ENABLED` | servidor | `true` | `false` desliga a IA sem remover a chave. |
 | `RATE_LIMIT_MAX` | servidor | `12` | Requisições por IP a cada 10 min (por instância). |
-| `NEXT_PUBLIC_META_PIXEL_ID` | build | vazio | Carrega o Meta Pixel e envia os eventos. |
+| `NEXT_PUBLIC_META_PIXEL_ID` | build | `351480523756375` | Meta Pixel ("Pixel Site OpenGate"). `off` desliga. |
 
 Variáveis `NEXT_PUBLIC_*` são embutidas no build: depois de alterá-las na Vercel, faça um novo deploy.
 Nunca coloque a chave da IA em uma variável `NEXT_PUBLIC_*`.
@@ -123,19 +123,30 @@ ou dado pessoal vai na URL.
 
 ## Analytics e Meta Ads
 
-Eventos (em `src/lib/analytics.ts`):
+Pixel: **Pixel Site OpenGate (`351480523756375`)**, o mesmo da landing de integradores. Carregado em
+`src/app/layout.tsx` (uma vez, com `next/script` + `noscript`), que envia o `PageView`. A página é única, sem
+navegação client-side, então há um `PageView` por carregamento.
+
+Eventos personalizados (`fbq('trackCustom')`, em `src/lib/analytics.ts`):
 
 | Evento | Quando | Parâmetros |
 |---|---|---|
-| `DiagnosticStart` | clique em "Começar diagnóstico" | — |
-| `DiagnosticComplete` | envio das respostas | — |
-| `DiagnosticResultView` | resultado exibido | `perfil` (A/B/C) |
-| `PartnerCtaClick` | clique no CTA da parceria | `perfil` (A/B/C) |
+| `DiagnosticStarted` | clique em "Começar diagnóstico" (não no carregamento) | — |
+| `DiagnosticCompleted` | resultado calculado e exibido, uma vez por envio (recarregar não repete) | `perfil` (A/B/C) |
+| `DiagnosticCTA` | clique no CTA para a landing (a navegação espera até 150 ms para o evento sair) | `perfil` (A/B/C) |
 
-Com `NEXT_PUBLIC_META_PIXEL_ID`, o Pixel é carregado (PageView + eventos `trackCustom`). Se a página tiver
-um `dataLayer` (GTM), os eventos também são enviados como `opengate_<Evento>`. **Pendente:** o Pixel ainda
-não foi configurado nem testado em produção; não há banner de consentimento (avaliar exigência de LGPD antes
-de ativar). O envio do formulário acontece na landing page do Framer e precisa ser medido lá.
+Nenhum deles é `Lead`: o diagnóstico qualifica, não converte. O `Lead` é disparado na landing de integradores,
+só após o envio confirmado do formulário. Nenhuma resposta individual nem dado pessoal vai nos eventos ou na URL.
+
+Funil: anúncio → `PageView` → `DiagnosticStarted` → `DiagnosticCompleted` → `DiagnosticCTA` → landing
+(`PageView`, com `origem=diagnostico` e UTMs) → `Lead`.
+
+Para usar os eventos personalizados em relatórios ou públicos na Meta, crie conversões personalizadas a partir
+deles no Gerenciador de Eventos (eles só aparecem lá depois de recebidos). Se a página tiver um `dataLayer`
+(GTM), os eventos também são enviados como `opengate_<Evento>`.
+
+Testes: os E2E bloqueiam `connect.facebook.net` e trocam `fbq` por um registrador local, então nenhum evento
+de teste chega à Meta. **Sem banner de consentimento:** avaliar a exigência de LGPD com o jurídico.
 
 ## Privacidade (LGPD)
 

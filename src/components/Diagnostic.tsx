@@ -86,7 +86,8 @@ export function Diagnostic() {
   }, []);
 
   const start = () => {
-    track("DiagnosticStart");
+    // Só no clique em "Começar diagnóstico", nunca no carregamento da página.
+    track("DiagnosticStarted");
     go({ kind: "question", index: 0 });
   };
 
@@ -134,17 +135,15 @@ export function Diagnostic() {
       go({ kind: "question", index: Math.max(firstMissing, 0) });
       return;
     }
-    track("DiagnosticComplete");
     go({ kind: "processing" });
     const final = await fetchResult(validation.answers);
     setResult(final.result);
     setFallbackNotice(final.fallback);
     go({ kind: "result" });
+    // Uma vez por envio, com o resultado já disponível. Recarregar a página com o resultado
+    // salvo não dispara de novo (não é uma nova conclusão).
+    track("DiagnosticCompleted", { perfil: final.result.profile });
   };
-
-  useEffect(() => {
-    if (step.kind === "result" && result) track("DiagnosticResultView", { perfil: result.profile });
-  }, [step.kind, result]);
 
   return (
     <div className="app">

@@ -6,6 +6,21 @@ import { track } from "@/lib/analytics";
 import type { DiagnosticResult } from "@/lib/engine/narrative";
 import { partnerHref } from "@/lib/utm";
 
+/** Tempo máximo que o clique espera o envio do evento antes de navegar. */
+const CTA_NAVIGATION_DELAY_MS = 150;
+
+/**
+ * Registra DiagnosticCTA e segue para a landing. No clique simples, a navegação espera um instante
+ * para o evento sair antes de a página ser trocada; clique com modificador (nova aba) segue o padrão.
+ */
+function goToPartner(e: React.MouseEvent<HTMLAnchorElement>, href: string, perfil: DiagnosticResult["profile"]) {
+  track("DiagnosticCTA", { perfil });
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  if (!window.fbq) return;
+  e.preventDefault();
+  window.setTimeout(() => window.location.assign(href), CTA_NAVIGATION_DELAY_MS);
+}
+
 const opportunityLabel = { A: "Principal oportunidade", B: "Ponto a desenvolver", C: "Prioridade agora" } as const;
 const levelLabel = { forte: "Forte", intermediario: "Em desenvolvimento", inicial: "Inicial" } as const;
 
@@ -70,7 +85,7 @@ export function ResultView({ result, fallbackNotice, onReview, onRestart }: Prop
         <h2 className="result__h2">Próximo passo</h2>
         <p>{result.nextStep}</p>
         <p className="next__cta-text">{result.cta.text}</p>
-        <a className={ctaClass} href={href} onClick={() => track("PartnerCtaClick", { perfil: result.profile })}>
+        <a className={ctaClass} href={href} onClick={(e) => goToPartner(e, href, result.profile)}>
           {site.partnerCtaLabel} <span aria-hidden="true">→</span>
         </a>
       </section>

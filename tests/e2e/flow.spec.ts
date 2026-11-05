@@ -1,6 +1,26 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const PARTNER = "https://integradores-opengate.framer.website";
+const PARTNER = "https://opengate-integradores.vercel.app";
+
+// O build carrega o Meta Pixel. Nos testes, nenhum evento pode sair para a Meta: o script oficial é
+// bloqueado e `fbq` vira um registrador local (window.__fbqCalls), definido antes do snippet do Pixel.
+test.beforeEach(async ({ page }) => {
+  await page.route(/connect\.facebook\.net|facebook\.com\/tr/, (route) => route.abort());
+  await page.addInitScript(() => {
+    const calls: unknown[][] = [];
+    (window as unknown as { __fbqCalls: unknown[][] }).__fbqCalls = calls;
+    (window as unknown as { fbq: (...a: unknown[]) => void }).fbq = (...args: unknown[]) => calls.push(args);
+  });
+});
+
+/** Eventos enviados ao Pixel até agora, como "track:PageView" ou "trackCustom:DiagnosticStarted". */
+async function pixelEvents(page: Page): Promise<string[]> {
+  return page.evaluate(() =>
+    ((window as unknown as { __fbqCalls?: unknown[][] }).__fbqCalls ?? [])
+      .filter((c) => c[0] === "track" || c[0] === "trackCustom")
+      .map((c) => `${c[0]}:${c[1]}`),
+  );
+}
 
 type Pick = { single?: string; multi?: string[] };
 
@@ -250,4 +270,73 @@ test.describe("API", () => {
     expect(body.result.profile).toBe("A");
     expect(["rules", "ai"]).toContain(body.result.source);
   });
+});
+
+test("Pixel: PageView único, eventos do funil na ordem certa e nenhum Lead no diagnóstico", async ({ page }) => {
+  await page.goto("/?utm_source=meta&utm_medium=paid&utm_campaign=integradores&utm_content=criativo01");
+  await expect(page.getByRole("button", { name: "Começar diagnóstico" })).toBeVisible();
+  const init = await page.evaluate(() =>
+    ((window as unknown as { __fbqCalls: unknown[][] }).__fbqCalls).filter((c) => c[0] === "init").map((c) => c[1]),
+  );
+  expect(init).toEqual(["351480523756375"]);
+  // Carregar a página não inicia o diagnóstico
+  expect(await pixelEvents(page)).toEqual(["track:PageView"]);
+
+  // Avançar só algumas perguntas não conta como conclusão
+  await page.getByRole("button", { name: "Começar diagnóstico" }).click();
+  await answer(page, PROFILE_A[0]);
+  await page.locator("form.question button[type=submit]").click();
+  expect(await pixelEvents(page)).toEqual(["track:PageView", "trackCustom:DiagnosticStarted"]);
+
+  // Nova visita vinda do anúncio (aba limpa)
+  await page.evaluate(() => sessionStorage.clear());
+  await page.goto("/?utm_source=meta&utm_medium=paid&utm_campaign=integradores&utm_content=criativo01");
+  await completeQuiz(page, PROFILE_A);
+  expect(await pixelEvents(page)).toEqual(["track:PageView", "trackCustom:DiagnosticStarted", "trackCustom:DiagnosticCompleted"]);
+  const completed = await page.evaluate(() =>
+    ((window as unknown as { __fbqCalls: unknown[][] }).__fbqCalls).find((c) => c[1] === "DiagnosticCompleted"),
+  );
+  // Só o perfil calculado: nenhuma resposta individual nos parâmetros
+  expect(completed![2]).toEqual({ perfil: "A" });
+
+  // Recarregar com o resultado salvo não gera nova conclusão
+  await page.reload();
+  await expect(page.getByText("Seu resultado")).toBeVisible();
+  expect(await pixelEvents(page)).toEqual(["track:PageView"]);
+
+  // CTA: registra DiagnosticCTA e navega para a landing com os parâmetros de campanha
+  await page.route(`${PARTNER}/**`, (route) => route.fulfill({ status: 200, contentType: "text/html", body: "<title>landing</title>" }));
+  const cta = page.getByRole("link", { name: /Conhecer a parceria OpenGate/ });
+  await Promise.all([page.waitForURL(`${PARTNER}/**`), cta.click()]);
+  const url = new URL(page.url());
+  expect(url.origin).toBe(PARTNER);
+  expect(Object.fromEntries(url.searchParams)).toEqual({
+    utm_source: "meta",
+    utm_medium: "paid",
+    utm_campaign: "integradores",
+    utm_content: "criativo01",
+    origem: "diagnostico",
+  });
+});
+
+test("Pixel: o clique no CTA gera exatamente um DiagnosticCTA (registrado antes da navegação) e nenhum Lead", async ({ page }) => {
+  // Registro fora da página: sobrevive à navegação para a landing.
+  const calls: unknown[][] = [];
+  await page.exposeFunction("__pixelOut", (args: unknown[]) => calls.push(args));
+  await page.addInitScript(() => {
+    const local = (window as unknown as { fbq: (...a: unknown[]) => void }).fbq;
+    (window as unknown as { fbq: (...a: unknown[]) => void }).fbq = (...args: unknown[]) => {
+      local(...args);
+      (window as unknown as { __pixelOut: (a: unknown[]) => void }).__pixelOut(args);
+    };
+  });
+  await page.goto("/");
+  await completeQuiz(page, PROFILE_B);
+  await page.route(`${PARTNER}/**`, (route) => route.fulfill({ status: 200, contentType: "text/html", body: "ok" }));
+  const cta = page.getByRole("link", { name: /Conhecer a parceria OpenGate/ });
+  await Promise.all([page.waitForURL(`${PARTNER}/**`), cta.click()]);
+  const names = calls.filter((c) => c[0] === "track" || c[0] === "trackCustom").map((c) => c[1]);
+  expect(names.filter((n) => n === "DiagnosticCTA")).toHaveLength(1);
+  expect(calls.find((c) => c[1] === "DiagnosticCTA")![2]).toEqual({ perfil: "B" });
+  expect(names).not.toContain("Lead");
 });
