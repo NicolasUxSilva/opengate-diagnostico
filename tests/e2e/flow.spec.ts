@@ -65,7 +65,7 @@ async function completeQuiz(page: Page, picks: Pick[]) {
   }
   await expect(page.getByRole("heading", { name: "Confira suas respostas" })).toBeVisible();
   await page.getByRole("button", { name: "Ver meu diagnóstico" }).click();
-  await expect(page.getByText("Seu resultado")).toBeVisible();
+  await expect(page.getByText("Seu resultado", { exact: true })).toBeVisible();
 }
 
 async function expectNoHorizontalScroll(page: Page) {
@@ -301,7 +301,7 @@ test("Pixel: PageView único, eventos do funil na ordem certa e nenhum Lead no d
 
   // Recarregar com o resultado salvo não gera nova conclusão
   await page.reload();
-  await expect(page.getByText("Seu resultado")).toBeVisible();
+  await expect(page.getByText("Seu resultado", { exact: true })).toBeVisible();
   expect(await pixelEvents(page)).toEqual(["track:PageView"]);
 
   // CTA: registra DiagnosticCTA e navega para a landing com os parâmetros de campanha
